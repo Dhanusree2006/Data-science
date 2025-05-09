@@ -1,1 +1,53 @@
+# Import required libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
 
+# Sample dataset (in real-world, you'd load a much larger dataset)
+data = {
+    'Weather': ['Clear', 'Rain', 'Snow', 'Fog', 'Clear', 'Rain'],
+    'Time': ['Day', 'Night', 'Day', 'Night', 'Night', 'Day'],
+    'Road_Condition': ['Dry', 'Wet', 'Snowy', 'Wet', 'Dry', 'Wet'],
+    'Severity': ['Minor', 'Severe', 'Severe', 'Severe', 'Minor', 'Minor']
+}
+
+# Convert to DataFrame
+df = pd.DataFrame(data)
+
+# Convert categorical features to numerical using one-hot encoding
+df_encoded = pd.get_dummies(df.drop('Severity', axis=1))
+
+# Encode labels: Minor = 0, Severe = 1
+df['Severity'] = df['Severity'].map({'Minor': 0, 'Severe': 1})
+
+# Split data
+X = df_encoded
+y = df['Severity']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+# Predict
+y_pred = model.predict(X_test)
+
+# Evaluation
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# Example prediction
+sample = pd.DataFrame({
+    'Weather_Clear': [1],
+    'Weather_Fog': [0],
+    'Weather_Rain': [0],
+    'Weather_Snow': [0],
+    'Time_Day': [1],
+    'Time_Night': [0],
+    'Road_Condition_Dry': [1],
+    'Road_Condition_Snowy': [0],
+    'Road_Condition_Wet': [0]
+})
+prediction = model.predict(sample)
+print("Predicted Severity:", "Severe" if prediction[0] == 1 else "Minor")
